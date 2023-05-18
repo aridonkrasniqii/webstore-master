@@ -1,0 +1,61 @@
+﻿@using System.Globalization
+@model WebStore.Models.Order
+
+@{
+    ViewData["Title"] = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>Order</h4>
+    <hr />
+    <dl class="row">
+	    <dt class = "col-sm-2">
+		    @Html.DisplayNameFor(model => model.PlacedBy)
+	    </dt>
+	    <dd class = "col-sm-10">
+		    @Html.DisplayFor(model => model.PlacedBy)
+	    </dd>
+	    <dt class = "col-sm-2">
+		    @Html.DisplayNameFor(model => model.State)
+	    </dt>
+	    <dd class = "col-sm-10">
+		    @Html.DisplayFor(model => model.State)
+	    </dd>
+    </dl>
+    <table class="table table-bordered">
+	    <thead>
+	    <tr>
+		    <td>Product Name</td>
+		    <td>Price</td>
+	    </tr>
+	    </thead>
+	    <tbody>
+	    @{ int total = 0;}
+		@if (Model.OrderItems != null)
+		{
+			@foreach (var item in Model.OrderItems)
+			{
+
+				<tr>
+					<td>@item.Product.Name</td>
+					<td>@((Convert.ToDouble(@item.Product.Cost) / 100.0).ToString("C", new CultureInfo("en-US")))</td>
+					@{ total += @item.Product.Cost; }
+				</tr>
+			}
+		}
+	    </tbody>
+	    <tfoot>
+	    <tr>
+		    <td></td>
+		    <td>@((Convert.ToDouble(total) / 100.0).ToString("C", new CultureInfo("en-US")))</td>
+	    </tr>
+	    </tfoot>
+    </table>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>

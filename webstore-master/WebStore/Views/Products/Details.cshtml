@@ -1,0 +1,127 @@
+﻿@using System.Globalization
+@model WebStore.Models.Product
+
+@{
+    ViewData["Title"] = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Details</h1>
+
+<div>
+	<h4>Product</h4>
+    <a href="#" class="btn btn-lg btn-primary" onclick="addToCart()">Add To Cart</a>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Name)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Name)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Description)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Description)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.StockCount)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.StockCount)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.ReleaseDate)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.ReleaseDate)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Category)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Category.Name)
+        </dd>
+    </dl>
+    <h5>Reviews</h5>
+    <hr />
+    @foreach (Review review in Model.Reviews)
+    {
+        <div>
+            <dl class="row">
+                <dt>@(string.Concat(Enumerable.Repeat("🌟", review.Stars)))</dt>
+                <dt>@review.Username on @review.CreatedAt.ToShortDateString() @review.CreatedAt.ToShortTimeString()</dt>
+                <dt>
+                    @Html.Raw(review.Title)
+                </dt>
+                <dt>
+                    @Html.Raw(review.Text)
+                </dt>
+            </dl>
+            <hr />
+        </div>
+    }
+</div>
+<div>
+    <h6>Add Your Reviews</h6>
+    <form id="reviewForm" onsubmit="submitReview()" action="javascript:void(0);">
+        <input type="hidden" value="@Model.Id" name="ProductId"/>
+        <input type="hidden" value="Administrator" name="Username"/>
+        <label for="title">Title</label>
+        <input type="text" name="Title" id="title"/><br/>
+        <label for="Text">Review Text</label>
+        <textarea id="Text" name="Text"></textarea><br/>
+        <label for="Stars">Stars</label>
+        <select name="Stars" id="stars">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+        </select>
+        <input type="hidden" value="@DateTime.Now.ToString("O", CultureInfo.InvariantCulture)" name="CreatedAt"/>
+        <input type="submit" value="save"/>
+    </form>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>
+<script>
+    function submitReview() {
+        const form = document.getElementById("reviewForm");
+        const formData = new FormData(form);
+        const submitObj = new Object()
+        for (var [key, value] of formData.entries()) { 
+            submitObj[key] = value;
+        }
+        xmlhttp = new XMLHttpRequest();
+        var url = "/api/Review";
+        xmlhttp.open("POST", url, true);
+        xmlhttp.setRequestHeader("Content-type", "application/json");
+        xmlhttp.onreadystatechange = function () {
+            if (xmlhttp.readyState == 4 && xmlhttp.status == 201) {
+                form.reset();
+                window.location.reload();
+            }
+        }
+        xmlhttp.send(JSON.stringify(submitObj))
+        
+    }
+    
+    function addToCart() {
+        var cookieValue = document.cookie.replaceAll(" ", "").split(";").find((row) => row.startsWith("cart"))?.split("=")[1];
+        if (cookieValue == null) {
+            console.log(cookieValue);
+            document.cookie = "cart =".concat(btoa("@Model.Id"), ";path=/");
+            console.log("@Model.Id")
+        } else {
+            console.log(cookieValue)
+            cookieValue = atob(cookieValue);
+            var newValue = btoa(cookieValue.concat(",", "@Model.Id"));
+            document.cookie = "cart =".concat(newValue, ";path=/");
+            console.log("taco");
+        }
+    }
+</script>
