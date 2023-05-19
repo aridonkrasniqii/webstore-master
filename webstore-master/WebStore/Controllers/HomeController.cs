@@ -90,21 +90,31 @@ namespace WebStore.Controllers
                   Path = "/",
                   HttpOnly = false
                 });
-              }
-            }
+              } 
+               
+               // 1 
 
-
-            // Ran out of time, maybe we should not give everyone CEO ac, just a thought
-            HttpContext.Response.Cookies.Append(
-                "role",
-                "CEO",
-                new CookieOptions
+                if (groups.Contains("Warehouse Manager"))
+              {
+                HttpContext.Response.Cookies.Append("role", "Warehouse Manager", new CookieOptions
                 {
                   Expires = DateTimeOffset.Now.AddDays(60),
                   Path = "/",
                   HttpOnly = false
-                }
-            );
+                });
+              } 
+               // 2 
+                
+
+               // 3 
+
+
+               // 4 
+
+
+               // 5 
+
+            }
 
             HttpContext.Response.Cookies.Append(
                 "username",
@@ -169,9 +179,8 @@ namespace WebStore.Controllers
           directoryEntry.CommitChanges();
           childEntry.Invoke("SetPassword", new object[] { model.Password });
           childEntry.CommitChanges();
-          // We really shouldn't be giving everyone Domain Admin
-          // Note to blue team: edit this to place users in the correct group
-          var userGroup = ouEntry.Children.Find("cn=Domain Admins");
+
+          var userGroup = ouEntry.Children.Find("cn=Domain Customers");
           string userPath = childEntry.Path;
           userGroup.Invoke("Add", new object[] { userPath });
           userGroup.CommitChanges();
