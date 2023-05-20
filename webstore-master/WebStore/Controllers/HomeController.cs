@@ -204,55 +204,60 @@ namespace WebStore.Controllers
     }
 
     [HttpPost]
-    public IActionResult SignUpProcess(SignUpModel model)
+   public IActionResult SignUpProcess(SignUpModel model)
+{
+    if (ModelState.IsValid)
     {
-      if (ModelState.IsValid)
-      {
         try
         {
-          var config = Configuration.GetSection("LDAP").Get<LdapConfig>();
-          DirectoryEntry directoryEntry = new DirectoryEntry(
-              config.Server,
-              config.BindUserName,
-              config.BindPassword
-          );
-          DirectoryEntry ouEntry = directoryEntry.Children.Find("cn=Users");
-          var childEntry = ouEntry.Children.Add(
-              $"cn={model.FirstName} {model.LastName}",
-              "user"
-          );
-          childEntry.Properties["samAccountName"].Value = model.Username;
-          childEntry.Properties["mail"].Value = model.Email;
-          childEntry.Properties["givenName"].Value = model.FirstName;
-          childEntry.Properties["sn"].Value = model.LastName;
-          childEntry.Properties["streetAddress"].Value = model.Address;
-          childEntry.Properties["postalCode"].Value = model.PostalCode;
-          childEntry.Properties["l"].Value = model.PostalCode;
-          childEntry.Properties["St"].Value = model.State;
-          childEntry.Properties["userPrincipalName"].Value =
-              $"{model.Username}@${config.Domain}";
-          childEntry.Properties["userAccountControl"].Value = 0x220;
-          childEntry.CommitChanges();
-          directoryEntry.CommitChanges();
-          childEntry.Invoke("SetPassword", new object[] { model.Password });
-          childEntry.CommitChanges();
+            var config = Configuration.GetSection("LDAP").Get<LdapConfig>();
+            DirectoryEntry directoryEntry = new DirectoryEntry(
+                config.Server,
+                config.BindUserName,
+                config.BindPassword
+            );
+            DirectoryEntry ouEntry = directoryEntry.Children.Find("cn=Users");
+            var childEntry = ouEntry.Children.Add(
+                $"cn={model.FirstName} {model.LastName}",
+                "user"
+            );
+            childEntry.Properties["samAccountName"].Value = model.Username;
+            childEntry.Properties["mail"].Value = model.Email;
+            childEntry.Properties["givenName"].Value = model.FirstName;
+            childEntry.Properties["sn"].Value = model.LastName;
+            childEntry.Properties["streetAddress"].Value = model.Address;
+            childEntry.Properties["postalCode"].Value = model.PostalCode;
+            childEntry.Properties["l"].Value = model.PostalCode;
+            childEntry.Properties["St"].Value = model.State;
+            childEntry.Properties["userPrincipalName"].Value =
+                $"{model.Username}@${config.Domain}";
+            childEntry.Properties["userAccountControl"].Value = 0x220;
+            childEntry.CommitChanges();
+            directoryEntry.CommitChanges();
 
-          var userGroup = ouEntry.Children.Find("cn=Domain Customers");
-          string userPath = childEntry.Path;
-          userGroup.Invoke("Add", new object[] { userPath });
-          userGroup.CommitChanges();
-          return RedirectToAction("SignIn");
+            // Hash the password
+            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(model.Password);
+
+            // Set the hashed password
+            childEntry.Invoke("SetPassword", new object[] { hashedPassword });
+            childEntry.CommitChanges();
+
+            var userGroup = ouEntry.Children.Find("cn=Domain Customers");
+            string userPath = childEntry.Path;
+            userGroup.Invoke("Add", new object[] { userPath });
+            userGroup.CommitChanges();
+            return RedirectToAction("SignIn");
         }
         catch
         {
-          return RedirectToAction("SignUp");
+            return RedirectToAction("SignUp");
         }
-      }
-      else
-      {
-        return RedirectToAction("SignUp");
-      }
     }
+    else
+    {
+        return RedirectToAction("SignUp");
+    }
+}
 
     public IActionResult SignOut()
     {
