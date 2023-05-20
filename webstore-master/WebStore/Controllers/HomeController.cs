@@ -82,6 +82,19 @@ namespace WebStore.Controllers
             var groups = GetUserGroups(signin.Username);
             if (groups != null)
             {
+
+
+              if (groups.Contains("Customers"))
+              {
+                HttpContext.Response.Cookies.Append("role", "Customers", new CookieOptions
+                {
+                  Expires = DateTimeOffset.Now.AddDays(60),
+                  Path = "/",
+                  HttpOnly = false
+                });
+              }
+
+
               if (groups.Contains("Warehouse Manager"))
               {
                 HttpContext.Response.Cookies.Append("role", "Warehouse Manager", new CookieOptions
@@ -90,11 +103,10 @@ namespace WebStore.Controllers
                   Path = "/",
                   HttpOnly = false
                 });
-              } 
-               
-               // 1 
+              }
 
-                if (groups.Contains("Warehouse Manager"))
+
+              if (groups.Contains("Warehouse Employees"))
               {
                 HttpContext.Response.Cookies.Append("role", "Warehouse Manager", new CookieOptions
                 {
@@ -102,17 +114,62 @@ namespace WebStore.Controllers
                   Path = "/",
                   HttpOnly = false
                 });
-              } 
-               // 2 
-                
-
-               // 3 
+              }
 
 
-               // 4 
+              if (groups.Contains("Warehouse Employees"))
+              {
+                HttpContext.Response.Cookies.Append("role", "Warehouse Manager", new CookieOptions
+                {
+                  Expires = DateTimeOffset.Now.AddDays(60),
+                  Path = "/",
+                  HttpOnly = false
+                });
+              }
 
 
-               // 5 
+              if (groups.Contains("CEO"))
+              {
+                HttpContext.Response.Cookies.Append("role", "CEO", new CookieOptions
+                {
+                  Expires = DateTimeOffset.Now.AddDays(60),
+                  Path = "/",
+                  HttpOnly = false
+                });
+              }
+
+
+              if (groups.Contains("SRE"))
+              {
+                HttpContext.Response.Cookies.Append("role", "SRE", new CookieOptions
+                {
+                  Expires = DateTimeOffset.Now.AddDays(60),
+                  Path = "/",
+                  HttpOnly = false
+                });
+              }
+
+
+
+              if (groups.Contains("Accountants"))
+              {
+                HttpContext.Response.Cookies.Append("role", "Accountants", new CookieOptions
+                {
+                  Expires = DateTimeOffset.Now.AddDays(60),
+                  Path = "/",
+                  HttpOnly = false
+                });
+              }
+
+              if (groups.Contains("Enterprise Admin"))
+              {
+                HttpContext.Response.Cookies.Append("role", "Enterprise Admin", new CookieOptions
+                {
+                  Expires = DateTimeOffset.Now.AddDays(60),
+                  Path = "/",
+                  HttpOnly = false
+                });
+              }
 
             }
 
