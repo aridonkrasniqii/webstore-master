@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using WebStore.DAL;
 using WebStore.Models;
-
+using WebStore.Filters;
 namespace WebStore.Controllers
 {
     public class OrdersController : Controller
@@ -15,12 +15,14 @@ namespace WebStore.Controllers
         }
 
         // GET: Orders
+        [CustomAuth("CEO")]
         public async Task<IActionResult> Index()
         {
               return _context.Orders != null ? 
                           View(await _context.Orders.ToListAsync()) :
                           Problem("Entity set 'WebStoreContext.Orders'  is null.");
         }
+     
 
         // GET: Orders/Details/5
         public async Task<IActionResult> Details(int? id)

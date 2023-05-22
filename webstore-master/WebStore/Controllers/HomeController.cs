@@ -4,6 +4,7 @@ using WebStore.Models;
 using System.DirectoryServices;
 using System.DirectoryServices.AccountManagement;
 using WebStore.Config;
+using BCrypt.Net;
 
 namespace WebStore.Controllers
 {
@@ -57,7 +58,7 @@ namespace WebStore.Controllers
             var filter = "(&(sAMAccountName=" + signin.Username + "))";
             directorySearcher.Filter = filter;
             var searchResult = directorySearcher.FindOne();
-
+           
             if (searchResult == null)
             {
               return RedirectToAction("SignIn");
@@ -69,9 +70,11 @@ namespace WebStore.Controllers
             bool isPasswordValid = false;
             using (var domainContext = new PrincipalContext(ContextType.Domain, config.Domain))
             {
-              isPasswordValid = domainContext.ValidateCredentials(signin.Username, signin.Password);
+                            Console.WriteLine("Before passworfd validation validation");
+                isPasswordValid = domainContext.ValidateCredentials(signin.Username, signin.Password);
+                Console.WriteLine("After password validtion");
             }
-
+            
             if (!isPasswordValid)
             {
 
@@ -80,100 +83,102 @@ namespace WebStore.Controllers
 
 
             var groups = GetUserGroups(signin.Username);
-            if (groups != null)
-            {
+                        if (groups != null)
+                        {
+                            
+
+                            if (groups.Contains("Customers"))
+                            {
+                                
+                                HttpContext.Response.Cookies.Append("role", "Customers", new CookieOptions
+                                {
+                                    Expires = DateTimeOffset.Now.AddDays(60),
+                                    Path = "/",
+                                    HttpOnly = false
+                                });
+                            }
+                            Console.WriteLine(groups);
+                        
+                            
+                            if (groups.Contains("Warehouse Manager"))
+                            {
+                              HttpContext.Response.Cookies.Append("role", "Warehouse Manager", new CookieOptions
+                              {
+                                Expires = DateTimeOffset.Now.AddDays(60),
+                                Path = "/",
+                                HttpOnly = false
+                              });
+                            }
 
 
-              if (groups.Contains("Customers"))
-              {
-                HttpContext.Response.Cookies.Append("role", "Customers", new CookieOptions
-                {
-                  Expires = DateTimeOffset.Now.AddDays(60),
-                  Path = "/",
-                  HttpOnly = false
-                });
-              }
+                            if (groups.Contains("Warehouse Employees"))
+                            {
+                              HttpContext.Response.Cookies.Append("role", "Warehouse Manager", new CookieOptions
+                              {
+                                Expires = DateTimeOffset.Now.AddDays(60),
+                                Path = "/",
+                                HttpOnly = false
+                              });
+                            }
 
 
-              if (groups.Contains("Warehouse Manager"))
-              {
-                HttpContext.Response.Cookies.Append("role", "Warehouse Manager", new CookieOptions
-                {
-                  Expires = DateTimeOffset.Now.AddDays(60),
-                  Path = "/",
-                  HttpOnly = false
-                });
-              }
+                            if (groups.Contains("Warehouse Employees"))
+                            {
+                              HttpContext.Response.Cookies.Append("role", "Warehouse Manager", new CookieOptions
+                              {
+                                Expires = DateTimeOffset.Now.AddDays(60),
+                                Path = "/",
+                                HttpOnly = false
+                              });
+                            }
 
 
-              if (groups.Contains("Warehouse Employees"))
-              {
-                HttpContext.Response.Cookies.Append("role", "Warehouse Manager", new CookieOptions
-                {
-                  Expires = DateTimeOffset.Now.AddDays(60),
-                  Path = "/",
-                  HttpOnly = false
-                });
-              }
+                            if (groups.Contains("CEO"))
+                            {
+                              HttpContext.Response.Cookies.Append("role", "CEO", new CookieOptions
+                              {
+                                Expires = DateTimeOffset.Now.AddDays(60),
+                                Path = "/",
+                                HttpOnly = false
+                              });
+                            }
 
 
-              if (groups.Contains("Warehouse Employees"))
-              {
-                HttpContext.Response.Cookies.Append("role", "Warehouse Manager", new CookieOptions
-                {
-                  Expires = DateTimeOffset.Now.AddDays(60),
-                  Path = "/",
-                  HttpOnly = false
-                });
-              }
-
-
-              if (groups.Contains("CEO"))
-              {
-                HttpContext.Response.Cookies.Append("role", "CEO", new CookieOptions
-                {
-                  Expires = DateTimeOffset.Now.AddDays(60),
-                  Path = "/",
-                  HttpOnly = false
-                });
-              }
-
-
-              if (groups.Contains("SRE"))
-              {
-                HttpContext.Response.Cookies.Append("role", "SRE", new CookieOptions
-                {
-                  Expires = DateTimeOffset.Now.AddDays(60),
-                  Path = "/",
-                  HttpOnly = false
-                });
-              }
+                            if (groups.Contains("SRE"))
+                            {
+                              HttpContext.Response.Cookies.Append("role", "SRE", new CookieOptions
+                              {
+                                Expires = DateTimeOffset.Now.AddDays(60),
+                                Path = "/",
+                                HttpOnly = false
+                              });
+                            }
 
 
 
-              if (groups.Contains("Accountants"))
-              {
-                HttpContext.Response.Cookies.Append("role", "Accountants", new CookieOptions
-                {
-                  Expires = DateTimeOffset.Now.AddDays(60),
-                  Path = "/",
-                  HttpOnly = false
-                });
-              }
+                            if (groups.Contains("Accountants"))
+                            {
+                              HttpContext.Response.Cookies.Append("role", "Accountants", new CookieOptions
+                              {
+                                Expires = DateTimeOffset.Now.AddDays(60),
+                                Path = "/",
+                                HttpOnly = false
+                              });
+                            }
 
-              if (groups.Contains("Enterprise Admin"))
-              {
-                HttpContext.Response.Cookies.Append("role", "Enterprise Admin", new CookieOptions
-                {
-                  Expires = DateTimeOffset.Now.AddDays(60),
-                  Path = "/",
-                  HttpOnly = false
-                });
-              }
+                            if (groups.Contains("Enterprise Admin"))
+                            {
+                              HttpContext.Response.Cookies.Append("role", "Enterprise Admin", new CookieOptions
+                              {
+                                Expires = DateTimeOffset.Now.AddDays(60),
+                                Path = "/",
+                                HttpOnly = false
+                              });
+                            }
 
-            }
-
-            HttpContext.Response.Cookies.Append(
+                          }
+                        
+                HttpContext.Response.Cookies.Append(
                 "username",
                 signin.Username,
                 new CookieOptions
@@ -236,13 +241,13 @@ namespace WebStore.Controllers
             directoryEntry.CommitChanges();
 
             // Hash the password
-            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(model.Password);
+           // string hashedPassword = BCrypt.Net.BCrypt.HashPassword(model.Password);
 
             // Set the hashed password
-            childEntry.Invoke("SetPassword", new object[] { hashedPassword });
+            childEntry.Invoke("SetPassword", new object[] { model.Password });
             childEntry.CommitChanges();
 
-            var userGroup = ouEntry.Children.Find("cn=Domain Customers");
+            var userGroup = ouEntry.Children.Find("cn=Customers");
             string userPath = childEntry.Path;
             userGroup.Invoke("Add", new object[] { userPath });
             userGroup.CommitChanges();
